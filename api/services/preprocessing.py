@@ -6,11 +6,7 @@ from pipeline.cleaning import clean_raw_data
 from pipeline.features import engineer_features
 from api.services.schema import validate_raw_schema
 
-
-# -------------------------------------------------------------------
 # Load feature schema (authoritative ML contract)
-# -------------------------------------------------------------------
-
 ARTIFACTS_DIR = Path(__file__).resolve().parents[2] / "artifacts" / "model"
 
 FEATURE_SCHEMA_PATH = ARTIFACTS_DIR / "feature_schema.json"
@@ -22,10 +18,7 @@ EXPECTED_FEATURES: list[str] = _schema["feature_names"]
 NUM_FEATURES: int = _schema["num_features"]
 
 
-# -------------------------------------------------------------------
 # Internal validation
-# -------------------------------------------------------------------
-
 def _validate_feature_schema(df_features: pd.DataFrame) -> None:
     """
     Ensure engineered features exactly match the model contract.
@@ -46,10 +39,7 @@ def _validate_feature_schema(df_features: pd.DataFrame) -> None:
         )
 
 
-# -------------------------------------------------------------------
 # Public API — single request preprocessing
-# -------------------------------------------------------------------
-
 def preprocess_request(payload: dict) -> pd.DataFrame:
     """
     Preprocess a single credit application payload into model-ready features.
@@ -79,10 +69,7 @@ def preprocess_request(payload: dict) -> pd.DataFrame:
     return df_features
 
 
-# -------------------------------------------------------------------
 # Public API — batch request preprocessing
-# -------------------------------------------------------------------
-
 def preprocess_request_batch(payloads: list[dict]) -> pd.DataFrame:
     """
     Preprocess a batch of credit application payloads into model-ready features.

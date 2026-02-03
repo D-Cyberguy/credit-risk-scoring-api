@@ -1,10 +1,10 @@
 Credit Risk Scoring API
 
-A production-oriented Credit Risk Scoring API built with FastAPI that serves a trained Gradient Boosting model for real-time and batch loan application scoring.
+A production-oriented Credit Risk Scoring API built with FastAPI, serving a trained Gradient Boosting model for real-time and batch loan application scoring.
 
-This project focuses on end-to-end ML serving design, including preprocessing, schema enforcement, inference, and business decisioning.
+This project focuses on end-to-end ML serving design, including preprocessing, schema enforcement, inference, business decisioning, lightweight monitoring, and containerized deployment.
 
-⚠️ This project is under active development. Additional enhancements and refinements will be added over time.
+⚠️ Project status: Actively evolving. Additional enhancements and refinements will be added over time.
 
 🚀 What This Project Does
 
@@ -16,7 +16,7 @@ Real-time scoring for single applications
 
 Batch scoring (up to 500 applications per request)
 
-Separates:
+Cleanly separates:
 
 Model prediction (binary default / no default)
 
@@ -29,6 +29,14 @@ Raw input validation
 Deterministic preprocessing
 
 Strict alignment with the model’s trained feature schema
+
+Provides:
+
+Request-level logging with request IDs
+
+Lightweight operational metrics via /metrics
+
+Fully containerized with Docker, ready for deployment
 
 🧠 High-Level Architecture
 Client Request
@@ -51,17 +59,20 @@ JSON Response
 
 
 Key idea:
-The model predicts risk. The system applies policy to make decisions.
+
+The model predicts risk.
+The system applies policy to make decisions.
 
 📦 Project Structure
 credit_risk_api/
 │
 ├── api/
-│   ├── main.py                  # FastAPI entry point
+│   ├── main.py                  # FastAPI entry point, middleware, routes
 │   └── services/
 │       ├── schema.py            # Raw input schema validation
 │       ├── preprocessing.py     # Validation → cleaning → feature engineering
-│       └── inference.py         # Model loading, inference & decision logic
+│       ├── inference.py         # Model loading, inference & decision logic
+│       └── metrics.py           # Lightweight in-memory metrics store
 │
 ├── pipeline/
 │   ├── cleaning.py              # Deterministic data cleaning logic
@@ -74,6 +85,8 @@ credit_risk_api/
 │       ├── decision_threshold.json
 │       └── model_metadata.json
 │
+├── Dockerfile
+├── docker-compose.yml
 ├── requirements.txt
 └── README.md
 
@@ -83,7 +96,7 @@ Model: GradientBoostingClassifier (scikit-learn)
 
 Objective: Recall-prioritized default detection
 
-Training evaluation: ROC-AUC ≈ 0.95
+Training performance: ROC-AUC ≈ 0.95
 
 Artifacts are externalized to support:
 
@@ -99,16 +112,14 @@ No preprocessing or training logic is executed at runtime.
 
 🧪 API Endpoints
 Health Check
+
 GET /health
-
-
-Response:
 
 { "status": "ok" }
 
 Single Prediction
-POST /predict
 
+POST /predict
 
 Example request:
 
@@ -133,13 +144,13 @@ Example response:
   "decision": "APPROVE",
   "prediction": 0,
   "probability_of_default": 0.0493,
-  "model_version": "v1.0.0",
-  "model_name": "credit_risk_gradient_boosting"
+  "model_name": "credit_risk_gradient_boosting",
+  "model_version": "v1.0.0"
 }
 
 Batch Prediction
-POST /predict/batch
 
+POST /predict/batch
 
 Accepts a list of applications
 
@@ -156,6 +167,24 @@ Example response:
     { "decision": "REJECT", "prediction": 1, "probability_of_default": 0.82 }
   ]
 }
+
+📊 Monitoring & Metrics
+Metrics Endpoint
+
+GET /metrics
+
+Provides lightweight operational statistics, including:
+
+Total request count
+
+Average request latency
+
+Decision distribution (APPROVE / CONDITIONAL / REJECT)
+
+Batch vs single request counts
+
+Metrics are stored in-memory for simplicity and clarity.
+This design demonstrates monitoring concepts without introducing infrastructure complexity.
 
 🧮 Model Output vs Business Decision
 
@@ -175,7 +204,7 @@ High	REJECT
 
 Thresholds are externalized in decision_threshold.json, allowing policy changes without retraining the model.
 
-⚙️ Running Locally
+⚙️ Running Locally (Without Docker)
 # Create virtual environment
 python -m venv .venv
 source .venv/bin/activate
@@ -191,10 +220,55 @@ Swagger UI: http://127.0.0.1:8000/docs
 
 Health check: http://127.0.0.1:8000/health
 
+🐳 Docker & Containerized Execution
+Build Image
+docker build -t credit-risk-api:latest .
+
+Run Container
+docker run -d \
+  --name credit-risk-api \
+  -p 8000:8000 \
+  credit-risk-api:latest
+
+
+Verify:
+
+curl http://localhost:8000/health
+
+🧩 Docker Compose
+
+A minimal docker-compose.yml is included to support future service expansion (e.g., databases, message queues, monitoring).
+
+docker compose up -d
+docker compose down
+
+
+The current compose setup runs the API only. Additional services can be added incrementally without changing application code.
+
+🏗️ Deployment Readiness
+
+This project is designed to be deployable on:
+
+AWS ECS / Fargate
+
+Google Cloud Run
+
+Azure Container Apps
+
+Kubernetes (with minimal adjustments)
+
+Containerization ensures:
+
+Environment consistency
+
+Predictable runtime behavior
+
+Smooth CI/CD integration
+
 🧭 Project Status
 
 This project is actively evolving.
-Future improvements may include additional validation, explainability, monitoring considerations, or deployment-related enhancements.
+Future improvements may include additional validation, explainability, enhanced monitoring, or deployment-related enhancements.
 
 👤 Author Notes
 
@@ -207,3 +281,5 @@ Clean separation of concerns
 Artifact-driven inference
 
 Practical credit risk system design
+
+Production-minded FastAPI engineering
