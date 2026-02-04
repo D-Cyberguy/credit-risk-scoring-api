@@ -1,82 +1,123 @@
 Credit Risk Scoring API
+A production-ready Machine Learning inference service built with FastAPI + Docker, serving a trained Gradient Boosting credit risk model for real-time and batch loan application scoring.
+This project demonstrates end-to-end ML serving engineering, not just modeling.
 
-A production-oriented Credit Risk Scoring API built with FastAPI, serving a trained Gradient Boosting model for real-time and batch loan application scoring.
+It includes:
 
-This project focuses on end-to-end ML serving design, including preprocessing, schema enforcement, inference, business decisioning, lightweight monitoring, and containerized deployment.
 
-⚠️ Project status: Actively evolving. Additional enhancements and refinements will be added over time.
+strict schema validation
 
-🚀 What This Project Does
 
-Scores loan applications for probability of default
+deterministic preprocessing
 
-Supports:
 
-Real-time scoring for single applications
+model inference
 
-Batch scoring (up to 500 applications per request)
 
-Cleanly separates:
+business decision logic
 
-Model prediction (binary default / no default)
 
-Business decision logic (APPROVE / CONDITIONAL_APPROVAL / REJECT)
+request tracing
 
-Enforces:
 
-Raw input validation
+structured logging
 
-Deterministic preprocessing
 
-Strict alignment with the model’s trained feature schema
+lightweight metrics
 
-Provides:
 
-Request-level logging with request IDs
+Dockerized deployment
 
-Lightweight operational metrics via /metrics
 
-Fully containerized with Docker, ready for deployment
+automated tests
 
-🧠 High-Level Architecture
+
+
+🚀 Features
+Prediction
+
+
+Single scoring (/predict)
+
+
+Batch scoring (/predict/batch, up to 500)
+
+
+Explainability with SHAP (/predict/explain)
+
+
+Observability
+
+
+Request IDs
+
+
+Structured JSON logs
+
+
+Latency tracking
+
+
+In-memory metrics endpoint
+
+
+Health checks
+
+
+Engineering
+
+
+Clean service architecture
+
+
+Model artifact separation
+
+
+Pytest tests
+
+
+Dockerized runtime
+
+
+Cloud deployment ready
+
+
+
+🧠 Architecture
 Client Request
-   ↓
-FastAPI Request Validation
-   ↓
-Raw Schema Validation (categorical & semantic checks)
-   ↓
-Data Cleaning (type coercion, clipping, missing handling)
-   ↓
-Feature Engineering (one-hot encoding, ordinal mapping)
-   ↓
-Feature Schema Enforcement (artifact-driven)
-   ↓
-Model Inference (Gradient Boosting)
-   ↓
-Business Decision Layer
-   ↓
-JSON Response
+      ↓
+FastAPI Validation
+      ↓
+Preprocessing (cleaning + feature engineering)
+      ↓
+Schema Enforcement
+      ↓
+Model Inference
+      ↓
+Business Decision Logic
+      ↓
+Response + Logging + Metrics
 
+Key principle:
 
-Key idea:
+Model predicts risk
+Business layer makes decisions
 
-The model predicts risk.
-The system applies policy to make decisions.
 
 📦 Project Structure
 credit_risk_api/
 │
 ├── api/
-│   ├── main.py                  # FastAPI entry point, middleware, routes
+│   ├── main.py                 # FastAPI entrypoint + middleware + routes
 │   └── services/
-│       ├── schema.py            # Raw input schema validation
-│       ├── preprocessing.py     # Validation → cleaning → feature engineering
-│       ├── inference.py         # Model loading, inference & decision logic
-│       └── metrics.py           # Lightweight in-memory metrics store
+│       ├── preprocessing.py
+│       ├── inference.py
+│       ├── explainability.py
+│       └── metrics.py
 │
 ├── pipeline/
-│   ├── cleaning.py              # Deterministic data cleaning logic
-│   └── features.py              # Feature engineering logic
+│   ├── cleaning.py
+│   └── features.py
 │
 ├── artifacts/
 │   └── model/
@@ -85,201 +126,161 @@ credit_risk_api/
 │       ├── decision_threshold.json
 │       └── model_metadata.json
 │
+├── tests/
+│   └── test_api.py
+│
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
-└── README.md
+├── README.md
+└── .gitignore
 
-🔍 Model & Artifacts
-
-Model: GradientBoostingClassifier (scikit-learn)
-
-Objective: Recall-prioritized default detection
-
-Training performance: ROC-AUC ≈ 0.95
-
-Artifacts are externalized to support:
-
-Reproducibility
-
-Versioning
-
-Safe inference
-
-Clear separation between training and serving
-
-No preprocessing or training logic is executed at runtime.
 
 🧪 API Endpoints
-Health Check
-
+Health
 GET /health
 
 { "status": "ok" }
 
-Single Prediction
 
-POST /predict
-
-Example request:
+Version
+GET /version
 
 {
-  "person_age": 32,
-  "person_income": 60000,
-  "person_home_ownership": "RENT",
-  "person_emp_length": 4,
-  "loan_intent": "PERSONAL",
-  "loan_grade": "B",
-  "loan_amnt": 12000,
-  "loan_int_rate": 13.5,
-  "loan_percent_income": 0.25,
-  "cb_person_default_on_file": "N",
-  "cb_person_cred_hist_length": 6
-}
-
-
-Example response:
-
-{
-  "decision": "APPROVE",
-  "prediction": 0,
-  "probability_of_default": 0.0493,
-  "model_name": "credit_risk_gradient_boosting",
+  "service": "credit-risk-api",
   "model_version": "v1.0.0"
 }
 
-Batch Prediction
 
-POST /predict/batch
+Single Prediction
+POST /predict
 
-Accepts a list of applications
-
-Vectorized preprocessing & inference
-
-Maximum batch size: 500
-
-Example response:
-
+Returns:
 {
-  "batch_size": 2,
-  "results": [
-    { "decision": "APPROVE", "prediction": 0, "probability_of_default": 0.04 },
-    { "decision": "REJECT", "prediction": 1, "probability_of_default": 0.82 }
-  ]
+  "decision": "APPROVE",
+  "prediction": 0,
+  "probability_of_default": 0.049
 }
 
-📊 Monitoring & Metrics
-Metrics Endpoint
 
+Batch Prediction
+POST /predict/batch
+
+Vectorized scoring for multiple records.
+
+Metrics
 GET /metrics
 
-Provides lightweight operational statistics, including:
+Returns:
 
-Total request count
 
-Average request latency
+total requests
 
-Decision distribution (APPROVE / CONDITIONAL / REJECT)
 
-Batch vs single request counts
+latency
 
-Metrics are stored in-memory for simplicity and clarity.
-This design demonstrates monitoring concepts without introducing infrastructure complexity.
 
-🧮 Model Output vs Business Decision
+decision counts
 
-Model output:
 
-Binary prediction (default / no default)
+batch vs single counts
 
-Probability of default
 
-Business decision:
-Derived from configurable probability thresholds:
 
-Probability of Default	Decision
-Low	APPROVE
-Medium	CONDITIONAL_APPROVAL
-High	REJECT
 
-Thresholds are externalized in decision_threshold.json, allowing policy changes without retraining the model.
+📊 Logging (Structured)
+All requests generate JSON logs:
+Example:
+{
+  "timestamp": "2026-02-04T12:09:51Z",
+  "level": "INFO",
+  "message": "request_id=abc123 method=POST path=/predict duration_ms=42.3"
+}
 
-⚙️ Running Locally (Without Docker)
-# Create virtual environment
-python -m venv .venv
+Each prediction logs:
+request_id, probability, decision
+
+Useful for:
+
+
+monitoring
+
+
+debugging
+
+
+tracing
+
+
+production observability
+
+
+
+
+🧪 Running Tests (Docker)
+We test inside the same runtime as production:
+docker build -t credit-risk-api .
+docker run --rm credit-risk-api pytest -v
+
+Example:
+2 passed in 3.0s
+
+
+
+⚙️ Run Locally (No Docker)
+python -m venv .venv # python version depends on you
 source .venv/bin/activate
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Start API
 uvicorn api.main:app --reload
 
-
-Swagger UI: http://127.0.0.1:8000/docs
-
-Health check: http://127.0.0.1:8000/health
-
-🐳 Docker & Containerized Execution
-Build Image
-docker build -t credit-risk-api:latest .
-
-Run Container
-docker run -d \
-  --name credit-risk-api \
-  -p 8000:8000 \
-  credit-risk-api:latest
+Docs:
+http://127.0.0.1:8000/docs
 
 
-Verify:
 
-curl http://localhost:8000/health
+🐳 Run With Docker
+Build:
+docker build -t credit-risk-api .
 
-🧩 Docker Compose
+Run:
+docker run -p 8000:8000 credit-risk-api
 
-A minimal docker-compose.yml is included to support future service expansion (e.g., databases, message queues, monitoring).
 
+
+🐳 Docker Compose
 docker compose up -d
-docker compose down
+
+Includes:
 
 
-The current compose setup runs the API only. Additional services can be added incrementally without changing application code.
+API
 
-🏗️ Deployment Readiness
 
-This project is designed to be deployable on:
+healthcheck
+
+
+restart policy
+
+
+
+
+☁️ Deployment Ready
+Designed for:
+
 
 AWS ECS / Fargate
 
+
 Google Cloud Run
+
 
 Azure Container Apps
 
-Kubernetes (with minimal adjustments)
 
-Containerization ensures:
+Kubernetes
 
-Environment consistency
 
-Predictable runtime behavior
+Containerized = same behavior everywhere.
 
-Smooth CI/CD integration
 
-🧭 Project Status
-
-This project is actively evolving.
-Future improvements may include additional validation, explainability, enhanced monitoring, or deployment-related enhancements.
-
-👤 Author Notes
-
-This project was built to demonstrate:
-
-End-to-end ML serving architecture
-
-Clean separation of concerns
-
-Artifact-driven inference
-
-Practical credit risk system design
-
-Production-minded FastAPI engineering
+WHICH EVER OF THE ABOVE WORKS FOR YOU!
