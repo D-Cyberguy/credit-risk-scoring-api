@@ -1,89 +1,67 @@
-Credit Risk Scoring API
-A production-ready Machine Learning inference service built with FastAPI + Docker, serving a trained Gradient Boosting credit risk model for real-time and batch loan application scoring.
-This project demonstrates end-to-end ML serving engineering, not just modeling.
+# Credit Risk Scoring API
 
-It includes:
+A **production-ready Machine Learning inference service** built with **FastAPI + Docker**, serving a trained **Gradient Boosting credit risk model** for real-time and batch loan application scoring.
 
+This project demonstrates **end-to-end ML serving engineering**, not just model training.
 
-strict schema validation
+It covers:
 
+* Deterministic preprocessing
+* Strict schema validation
+* Model inference
+* Business decisioning
+* Structured logging
+* Observability & metrics
+* Automated tests
+* Containerization
+* Cloud deployment
 
-deterministic preprocessing
+---
 
+## 🌐 Live Demo (Railway)
 
-model inference
+Swagger UI
+👉 [https://credit-risk-scoring-api-production.up.railway.app/docs](https://credit-risk-scoring-api-production.up.railway.app/docs)
 
+Health
+👉 [https://credit-risk-scoring-api-production.up.railway.app/health](https://credit-risk-scoring-api-production.up.railway.app/health)
 
-business decision logic
+Metrics
+👉 [https://credit-risk-scoring-api-production.up.railway.app/metrics](https://credit-risk-scoring-api-production.up.railway.app/metrics)
 
+---
 
-request tracing
+# 🚀 Features
 
+## Prediction
 
-structured logging
+* Single scoring → `/predict`
+* Batch scoring → `/predict/batch` (≤ 500 records)
+* Explainability with SHAP → `/predict/explain`
 
+## Observability
 
-lightweight metrics
+* Request IDs
+* Structured JSON logs
+* Latency tracking
+* Health checks
+* Lightweight metrics endpoint
 
+## Engineering
 
-Dockerized deployment
+* Clean service architecture
+* Strict schema enforcement
+* Deterministic preprocessing
+* Artifact-driven inference
+* Pytest tests
+* Fully Dockerized
+* Cloud deployable
 
+---
 
-automated tests
+# 🧠 System Architecture
 
-
-
-🚀 Features
-Prediction
-
-
-Single scoring (/predict)
-
-
-Batch scoring (/predict/batch, up to 500)
-
-
-Explainability with SHAP (/predict/explain)
-
-
-Observability
-
-
-Request IDs
-
-
-Structured JSON logs
-
-
-Latency tracking
-
-
-In-memory metrics endpoint
-
-
-Health checks
-
-
-Engineering
-
-
-Clean service architecture
-
-
-Model artifact separation
-
-
-Pytest tests
-
-
-Dockerized runtime
-
-
-Cloud deployment ready
-
-
-
-🧠 Architecture
+```
 Client Request
       ↓
 FastAPI Validation
@@ -97,14 +75,24 @@ Model Inference
 Business Decision Logic
       ↓
 Response + Logging + Metrics
+```
 
-Key principle:
+### Key principle
 
-Model predicts risk
-Business layer makes decisions
+**Model predicts risk.
+Business layer makes decisions.**
 
+This separation allows:
 
-📦 Project Structure
+* policy changes without retraining
+* safer production behavior
+* clearer ownership
+
+---
+
+# 📦 Project Structure
+
+```
 credit_risk_api/
 │
 ├── api/
@@ -134,153 +122,181 @@ credit_risk_api/
 ├── requirements.txt
 ├── README.md
 └── .gitignore
+```
 
+---
 
-🧪 API Endpoints
-Health
-GET /health
+# 🧪 API Endpoints
 
+## Health
+
+GET `/health`
+
+```json
 { "status": "ok" }
+```
 
+## Version
 
-Version
-GET /version
+GET `/version`
 
+```json
 {
   "service": "credit-risk-api",
   "model_version": "v1.0.0"
 }
+```
 
+## Single Prediction
 
-Single Prediction
-POST /predict
+POST `/predict`
 
-Returns:
+```json
 {
   "decision": "APPROVE",
   "prediction": 0,
   "probability_of_default": 0.049
 }
+```
 
+## Batch Prediction
 
-Batch Prediction
-POST /predict/batch
+POST `/predict/batch`
 
 Vectorized scoring for multiple records.
 
-Metrics
-GET /metrics
+## Metrics
+
+GET `/metrics`
 
 Returns:
 
+* total requests
+* latency
+* decision counts
+* batch vs single counts
 
-total requests
+---
 
+# 📊 Structured Logging
 
-latency
+All requests emit JSON logs:
 
-
-decision counts
-
-
-batch vs single counts
-
-
-
-
-📊 Logging (Structured)
-All requests generate JSON logs:
-Example:
+```json
 {
   "timestamp": "2026-02-04T12:09:51Z",
   "level": "INFO",
-  "message": "request_id=abc123 method=POST path=/predict duration_ms=42.3"
+  "request_id": "abc123",
+  "method": "POST",
+  "path": "/predict",
+  "duration_ms": 42.3
 }
+```
 
-Each prediction logs:
-request_id, probability, decision
+Benefits:
 
-Useful for:
+* tracing
+* debugging
+* monitoring
+* production observability
 
+---
 
-monitoring
+# 🧪 Running Tests (Docker)
 
+Tests run inside the **same runtime as production**.
 
-debugging
-
-
-tracing
-
-
-production observability
-
-
-
-
-🧪 Running Tests (Docker)
-We test inside the same runtime as production:
+```bash
 docker build -t credit-risk-api .
 docker run --rm credit-risk-api pytest -v
+```
 
 Example:
+
+```
 2 passed in 3.0s
+```
 
+---
 
+# ⚙️ Run Locally
 
-⚙️ Run Locally (No Docker)
-python -m venv .venv # python version depends on you
+```bash
+python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+
 uvicorn api.main:app --reload
+```
 
-Docs:
+Swagger:
+
+```
 http://127.0.0.1:8000/docs
+```
 
+---
 
+# 🐳 Docker
 
-🐳 Run With Docker
-Build:
+Build
+
+```bash
 docker build -t credit-risk-api .
+```
 
-Run:
+Run
+
+```bash
 docker run -p 8000:8000 credit-risk-api
+```
 
+---
 
+# 🐳 Docker Compose
 
-🐳 Docker Compose
+```bash
 docker compose up -d
+```
 
 Includes:
 
+* API service
+* health checks
+* restart policy
 
-API
+---
 
+# ☁️ Deployment Ready
 
-healthcheck
+Works with:
 
+* Railway (current deployment)
+* AWS ECS / Fargate
+* Google Cloud Run
+* Azure Container Apps
+* Kubernetes
 
-restart policy
+**Containerization ensures identical behavior everywhere.**
 
+---
 
+# 🧭 Project Goals
 
+This project demonstrates:
 
-☁️ Deployment Ready
-Designed for:
+* production ML serving
+* clean API architecture
+* artifact-driven inference
+* observability practices
+* containerized deployment
+* testability
+* cloud readiness
 
+---
 
-AWS ECS / Fargate
+# 👤 Author
 
+Built as an end-to-end demonstration of **real-world ML system engineering**, not just modeling.
 
-Google Cloud Run
-
-
-Azure Container Apps
-
-
-Kubernetes
-
-
-Containerized = same behavior everywhere.
-
-
-WHICH EVER OF THE ABOVE WORKS FOR YOU!
+Designed to reflect how production credit risk systems are deployed in fintech environments.
