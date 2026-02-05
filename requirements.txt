@@ -12,3 +12,6 @@ llvmlite==0.42.0
 
 pytest
 httpx
+h11>=0.16.0 # not directly required, pinned by Snyk to avoid a vulnerability
+anyio>=4.4.0 # not directly required, pinned by Snyk to avoid a vulnerability
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
